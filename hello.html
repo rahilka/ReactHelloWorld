@@ -12,104 +12,88 @@
     <div id="root"></div>
     <script type="text/babel">
 
-      // Components let you split the UI into independent, reusable pieces, and think about each piece in isolation.
-      // Conceptually, components are like JavaScript functions.
-      // They accept arbitrary inputs (called "props") and return React elements describing what should appear on the screen.
+      // State is similar to props, but it is private and fully controlled by the component
+      // Local state is a feature available only to classes.
 
-      // This function is a valid React component because it accepts a single "props" object argument with data and returns a React element.
-      function Welcome(props) {
-        return <h1>Hello, {props.name}!</h1>;
-      } //We call such components "functional" because they are literally JavaScript functions.
-
-      // ALWAYS start component names with a capital letter.
-
-      // Class component example:
-      // class Welcome extends React.Component {
-      //   render() {
-      //     return <h1>Hello, {this.props.name}!</h1>
-      //   }
+      // function Clock(props) {
+      //   return(
+      //     <div>
+      //       <h1>Hello, word!</h1>
+      //       <h2>It is {props.date.toLocaleTimeString()}</h2>
+      //     </div>
+      //   );
       // }
 
+      // All components are truly isolated
+      // Each Clock sets up its own timer and updates independently
       function App() {
-        return (
-          <div>
-            <Welcome name="Rahilka" />
-            <Welcome name="Ljubica" />
-            <Welcome name="Ana" />
-            <Welcome name="Risto" />
-          </div>
-        )
-      } //Typically, new React apps have a single App component at the very top.
-      // COMPONENTS MUST RETURN A SINGLE ROOT ELEMENT !!
-
-      // When React sees an element representing a user-defined component (in our case - Welcome),
-      // it passes JSX attributes (in our case: name="Rahilka") to this component as a single object.
-      // We call this object "props".
-      // So we can access the name property on the props obejct, with: props.name
-      // Now props looks like: props = { name: "Rahilka" }
-
-      const element = <Welcome name="Rahilka" />;
-
-      function Avatar(props) {
-        return(
-          <img
-            src={props.user.avatarUrl}
-            alt={props.user.name}
-          />
-        )
-      }
-
-      function UserInfo(props) {
         return(
           <div>
-            <Avatar user={props.user} />
-            <div>
-              {props.user.name}
-            </div>
-          </div>
-        );
-      }
-
-      // PROPS ARE READ_ONLY
-
-      // Single strict rule in React:
-      // All React components must act like pure functions with respect to their props.
-      // Pure function meaning: not attempt to change the input, and always return the same result for the same inputs
-
-      function Comment(props) {
-        return (
-          <div>
-            <UserInfo user={props.author} />
-            <div>
-              {props.text}
-            </div>
-            <div>
-              {props.date}
-            </div>
+            <Clock />
+            <Clock />
+            <Clock />
           </div>
         )
       }
 
-      const comment = {
-        date: new Date().toLocaleDateString(),
-        text: `I'm enjoying learning React`,
-        author: {
-          name: 'Pablo Neruda',
-          avatarUrl: 'some invalid url'
+      function FormattedDate(props) {
+        return <h2>It is {props.date.toLocaleTimeString()}</h2>
+      }
+
+      // Any state is always owned by some specific component, and any data or UI derived from that state can only affect components "below" them in the tree.
+
+      // Converting a function to a Class:
+
+      class Clock extends React.Component {
+
+        // State is often called local or encapsulated. It is not accessible to any component other than the one that owns and sets it.
+
+        constructor(props) {  //assigns the initial this.state
+          super(props);      // Class components should always call the base constructor with props
+          this.state = { date: new Date() };
+          // The only place where you can assign this.state is the constructor
         }
+
+        // MOUNTING: happens when the component is rendered to the DOM for the first time
+        // UNMOUNTING: happens whenever the DOM produced by the component is removed
+
+        // Decalre lifecycle hooks:
+        componentDidMount() {
+          //runs after the component output has been rendered to the DOM for the first time
+
+          this.timerID = setInterval(
+            () => this.tick(),
+            1000
+          );
+
+        }
+
+        componentWillUnmount() {
+          clearInterval(this.timerID);
+        }
+
+        tick() {
+          this.setState({ //Thanks to the setState() call, React knows the state has changed, and calls render() method again to learn what should be on the screen
+            date: new Date()
+          });
+        }
+
+        render() {
+          return (
+            <div>
+              <h1>Hello, word!</h1>
+              <FormattedDate date={this.state.date} />
+            </div>
+          );
+        }
+
       }
 
 
       ReactDOM.render(
-        <Comment date={comment.date} text={comment.text} author={comment.author} />,
+        <App />,
         document.getElementById('root')
       );
-
-      // What happens in this example:
-      // 1. We call ReactDOM.render() with the <Welcome name="Rahilka" /> element.
-      // 2. React calls the Welcome component with {name: 'Rahilka'} as the props.
-      // 3. Our Welcome component returns a <h1>Hello, Rahilka</h1> element as the result.
-      // 4. eact DOM efficiently updates the DOM to match <h1>Hello, Rahilka</h1>
 
     </script>
   </body>
